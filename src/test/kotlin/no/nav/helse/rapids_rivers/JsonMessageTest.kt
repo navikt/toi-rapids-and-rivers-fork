@@ -100,6 +100,43 @@ internal class JsonMessageTest {
     }
 
     @Test
+    fun `if system_participating_services is an object it should be made into an array`() {
+        val objectSPS = """
+            {
+              "aktørId": "2331033060641",
+              "organisasjonsnummer": "312113341",
+              "kandidatlisteId": "f3f4a72b-1388-4a1b-b808-ed6336e2c6a4",
+              "tidspunkt": "2023-02-20T14:19:46.73+01:00",
+              "stillingsId": "81976dd8-8252-480b-8ea0-1c9468ddd4f1",
+              "utførtAvNavIdent": "Z994633",
+              "utførtAvNavKontorKode": "0313",
+              "synligKandidat": true,
+              "inkludering": {
+                "harHullICv": true,
+                "alder": 61,
+                "tilretteleggingsbehov": [],
+                "innsatsbehov": "BATT",
+                "hovedmål": "SKAFFEA"
+              },
+              "@event_name": "kandidat_v2.RegistrertDeltCv",
+              "system_participating_services": {
+                "id": "07212ffc-077c-41dd-8733-e21a4d237028",
+                "time": "2023-02-20T14:20:00.134217367",
+                "service": "rekrutteringsbistand-kandidat-api",
+                "instance": "rekrutteringsbistand-kandidat-api-6549749f4d-mrj4z",
+                "image": "ghcr.io/navikt/rekrutteringsbistand-kandidat-api/rekrutteringsbistand-kandidat-api:9c48923f261a68b5f1820cec68b4f8924ad3b63c"
+              }
+            }
+        """.trimIndent()
+        MessageProblems(objectSPS).also {
+            val msg = JsonMessage(objectSPS, it)
+            val node = objectMapper.readTree(msg.toJson())
+            assertTrue(node.path("system_participating_services").isArray)
+            assertFalse(it.hasErrors()) { "system_participating_services-format is not acceptable $objectSPS" }
+        }
+    }
+
+    @Test
     fun `require custom parser`() {
         MessageProblems("").apply {
             JsonMessage("{\"foo\": \"bar\"}", this).apply {

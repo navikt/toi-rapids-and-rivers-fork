@@ -73,7 +73,11 @@ open class JsonMessage(
                 compute("image") { _, _ -> serviceImage }
             }
             if (node.path(ParticipatingServicesKey).isMissingOrNull()) (node as ObjectNode).putArray(ParticipatingServicesKey).add(objectMapper.valueToTree<ObjectNode>(entry))
-            else (node.path(ParticipatingServicesKey) as ArrayNode).add(objectMapper.valueToTree<JsonNode>(entry))
+            else {
+                val participatingServicesNode = node.path(ParticipatingServicesKey)
+                if (participatingServicesNode is ArrayNode) participatingServicesNode.add(objectMapper.valueToTree<JsonNode>(entry))
+                else if(participatingServicesNode is ObjectNode) (node as ObjectNode).putArray(ParticipatingServicesKey).add(participatingServicesNode)
+            }
         }
     }
 
